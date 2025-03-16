@@ -9,7 +9,7 @@ jobs:
       - name: Install Packages & Extract Page Images
         run: |
             sudo apt-get -y install imagemagick ghostscript
-            convert -density 300 docs/main.pdf[0,2] -quality 85 -alpha remove docs/example-%d.jpg
+            convert -density 300 docs/Australis-Documentation-firmware_design.pdf[0,2] -quality 85 -alpha remove docs/page-%d.jpg
       - name: Commit Change
         run: |
             git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
