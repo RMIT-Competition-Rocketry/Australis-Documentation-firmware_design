@@ -18,9 +18,9 @@ jobs:
           pre_compile: "echo 'yes' | apk add msttcorefonts-installer && update-ms-fonts && fc-cache -f"
       - name: Commit data
         run: |
-            ls .
             git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git config --local user.name "github-actions[bot]"
+            mkdir -p docs
             cp main.pdf docs/Australis-Documentation-firmware_design.pdf
             git add docs
             git commit -m "Added latest build"
