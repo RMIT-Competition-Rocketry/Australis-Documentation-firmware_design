@@ -1,0 +1,125 @@
+\pagestyle{ruled}
+
+\phantomsection
+\section*{Important Terms}
+\addcontentsline{toc}{section}{Important Terms}
+\begin{description}[leftmargin=8em,style=multiline]
+    \item[Australis] Student developed flight computer hardware platform for high power rockets.
+    \item[Australis Core] An internal component providing the base API and critical logic; stylised \verb|core|.
+    \item[Australis Extra] An internal component providing modular systems that may be optionally included to extend core functionality; stylised \verb|extra|.
+    \item[Australis Firmware] Flight computer firmware system for high power rockets; designed for, but not limited to, deployment on Australis targets.
+    \item[Component] A collection of semantically related code groups and files within the Australis Firmware ecosystem.
+    \item[Device] A hardware element external to the controller that provides additional functionality via a connected interface.
+    \item[Driver] Software implementation of a device or peripheral interface.
+    \item[Peripheral] A hardware element internal to the controller that provides important extensions to the feature set of its core processor.
+    \item[Submodule] An isolated system packaged within \verb|extra| that extends system functionality to target source code. Submodules may only depend on the \verb|core| API.
+    \item[Target] A hardware platform on which the Australis Firmware operates.
+\end{description}
+
+\phantomsection
+\section*{Abbreviations}
+\addcontentsline{toc}{section}{Abbreviations}
+\begin{description}[leftmargin=3em,style=multiline]
+    \item[A3\footnotemark] Aurora 3
+    \item[API] Application Programming Interface
+    \item[AV2] Australis Version 2
+\end{description}
+\footnotetext{{Also refers to version 1 of the Australis flight computer hardware.}}
+
+\clearpage
+
+\section{System Overview}
+
+\subsection{Firmware Architecture}
+Australis Firmware is a software platform for implementing FreeRTOS task systems designed for high power rockets based on STM32 hardware. It is packaged as two internal components, \verb|core| and \verb|extra|, which can be integrated by developers to create a complete flight computer system for their required target.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        % Core ------------------------------------------------------------------------------------
+        \node[element, minimum width=8cm, fill=pastelyellow!50](core){Australis Core};
+        \node[element, minimum width=3cm, above=5mm of core.north, xshift=-2.15cm, fill=pastelgreen!50](core_state){State};
+        \node[element, minimum width=3cm, above=5mm of core.north, xshift=2.15cm, fill=pastelgreen!50](core_devices){Devices};
+        % Core group
+        \begin{pgfonlayer}{background}
+            \node[second_group, fit={(core_state) (core_devices)}](group_rectangle)(inner_main_group){};
+        \end{pgfonlayer}
+        \begin{pgfonlayer}{subbackground}
+            \node[group, fit={(inner_main_group) (core)}, minimum width=4cm](group_rectangle)(main_group){};
+        \end{pgfonlayer}
+        % Extra ------------------------------------------------------------------------------------
+        \node[element, minimum width=3cm, above=12.5mm of core_state.north, fill=pastelyellow!50](extra){Australis Extra};
+        \node[element, minimum width=3cm, above=12.5mm of core_devices.north](target){Target\footnotemark};
+        % Extra group
+        \begin{pgfonlayer}{background}
+            \node[group, fit={(extra) (target)}, minimum width=8.5cm](group_rectangle)(extra_group){};
+        \end{pgfonlayer}
+        % Legend -----------------------------------------------------------------------------------
+        \node[square, minimum width=4mm, anchor=north west, above=5mm of extra_group.north west, xshift=7mm, draw=black, fill=pastelyellow, label={right:Australis Firmware}](legend_firmware){};
+        \node[square, minimum width=4mm, right=of legend_firmware, xshift=3cm, draw=black, fill=pastelgreen, label={right:Australis Interface}](legend_interface){};
+        % Subscript --------------------------------------------------------------------------------
+        \useasboundingbox (current bounding box);
+        % Labels -----------------------------------------------------------------------------------
+        \node[label, left=0.2cm of main_group]{Australis Core layer};
+        \node[label, left=0.2cm of extra_group]{Australis Target layer};
+        % Arrows -----------------------------------------------------------------------------------
+        \draw[-Triangle,thick] (core_state.north) |- ([yshift=-5mm]target.south) -- (target.south);
+        \draw[-Triangle,thick] (core_devices.north) |- ([yshift=-5mm]extra.south) -- (extra.south);
+        \draw[Triangle-Triangle,thick] (extra.east) -- (target.west);
+    \end{tikzpicture}
+    \caption{Australis Firmware system architecture}
+    \label{fig:architecture}
+\end{figure}
+\footnotetext{Target component is implementation specific.}
+
+Australis Firmware implements a layered architecture (pictured Fig.~\ref{fig:architecture}), where \verb|core| defines the base which provides the system API and critical logic, with the target layer on top integrating both \verb|extra| submodules and target source code.
+
+\subsection{Components}
+
+\subsubsection{Core}
+\paragraph{State}
+\paragraph{Devices}
+
+\subsubsection{Extra}
+
+\section{Implementation Details}
+
+\section{Future Progress}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \node[element, minimum width=8.5cm, fill=pastelyellow!50](portable){Australis Portable};
+        % Core ------------------------------------------------------------------------------------
+        \node[element, minimum width=8cm, above=8mm of portable.north, fill=pastelyellow!50](core){Australis Core};
+        \node[element, minimum width=3cm, above=5mm of core.north, xshift=-2.15cm, fill=pastelgreen!50](core_state){State};
+        \node[element, minimum width=3cm, above=5mm of core.north, xshift=2.15cm, fill=pastelgreen!50](core_devices){Devices};
+        % Core group
+        \begin{pgfonlayer}{background}
+            \node[second_group, fit={(core_state) (core_devices)}](group_rectangle)(inner_main_group){};
+        \end{pgfonlayer}
+        \begin{pgfonlayer}{subbackground}
+            \node[group, fit={(inner_main_group) (core)}, minimum width=4cm](group_rectangle)(main_group){};
+        \end{pgfonlayer}
+        % Extra ------------------------------------------------------------------------------------
+        \node[element, minimum width=3cm, above=12.5mm of core_state.north, fill=pastelyellow!50](extra){Australis Extra};
+        \node[element, minimum width=3cm, above=12.5mm of core_devices.north](target){Target};
+        % Extra group
+        \begin{pgfonlayer}{background}
+            \node[group, fit={(extra) (target)}, minimum width=8.5cm](group_rectangle)(extra_group){};
+        \end{pgfonlayer}
+        % Legend -----------------------------------------------------------------------------------
+        \node[square, minimum width=4mm, anchor=north west, above=5mm of extra_group.north west, xshift=7mm, draw=black, fill=pastelyellow, label={right:Australis Firmware}](legend_firmware){};
+        \node[square, minimum width=4mm, right=of legend_firmware, xshift=3cm, draw=black, fill=pastelgreen, label={right:Australis Interface}](legend_interface){};        \useasboundingbox (current bounding box);
+        % Labels -----------------------------------------------------------------------------------
+        \node[label, left=0.2cm of portable]{Australis portable layer};
+        \node[label, left=0.2cm of main_group]{Australis Core layer};
+        \node[label, left=0.2cm of extra_group]{Australis Target layer};
+        % Arrows -----------------------------------------------------------------------------------
+        \draw[-Triangle,thick] (core_state.north) |- ([yshift=-5mm]target.south) -- (target.south);
+        \draw[-Triangle,thick] (core_devices.north) |- ([yshift=-5mm]extra.south) -- (extra.south);
+        \draw[Triangle-Triangle,thick] (extra.east) -- (target.west);
+    \end{tikzpicture}
+    \caption{Proposed system architecture}
+    \label{fig:architecture_portable}
+\end{figure}
