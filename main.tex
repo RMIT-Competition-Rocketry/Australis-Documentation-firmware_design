@@ -17,7 +17,6 @@
 \newfontfamily{\arial}{Arial}
 \newfontfamily{\fauna}{FAUNA}[Path = fonts/, Extension = .ttf, UprightFont = *-THIN]
 
-
 \usepackage{lastpage}
 \usepackage{pgfplots}
 \usepackage{geometry}
@@ -35,7 +34,6 @@
 \usepackage{tabularx}
 \usepackage{amsmath}
 \usepackage{array}
-\usepackage{titlesec}
 \usepackage{varwidth}
 \usepackage{bytefield}
 \usepackage{siunitx}
@@ -57,7 +55,7 @@
 % ======================================================================================
 
 \setlist[itemize]{noitemsep}
-\setlist[itemize, 1]{itemsep=0.5em,align=parleft,left=0pt..1.5em, label={\Large\textbullet}}
+\setlist[itemize, 1]{itemsep=0.25em,align=parleft,left=0pt..1.5em, label={\Large\textbullet}}
 
 % Set up SI units
 \sisetup{group-separator = {,}} % Separate groups with comma (i.e. 1,000,000)
@@ -152,9 +150,13 @@
 \setlength{\margindedent}{0.5\textwidth-0.5\headwidth}
 
 % Section title format 
-\titleformat*{\section}{\huge\bfseries}
-\titleformat*{\subsection}{\Large\bfseries}
-\titleformat*{\subsubsection}{\large\bfseries}
+\setsecheadstyle{\huge\bfseries}
+\setsubsecheadstyle{\Large\bfseries}
+\setsubsubsecheadstyle{\large\bfseries}
+
+% Section title skip 
+\setaftersecskip{0.75em}
+\setaftersubsecskip{0.75em}
 
 % Section number format
 \renewcommand{\thesection}{\arabic{section}}
@@ -177,9 +179,10 @@
 \setlength{\absleftindent}{0em}
 \setlength{\absrightindent}{0em}
 
-\renewcommand{\baselinestretch}{1.125} % Scale baselineskip length
+\renewcommand{\baselinestretch}{1} % Scale baselineskip length
 \setlength{\parskip}{0.5em}            % Adjust paragraph spacing
 \setlength{\parindent}{0em}
+
 
 % ======================================================================================
 %                                      LISTINGS
@@ -468,10 +471,6 @@
     \item AV2 Hardware Reference
   \end{itemize}
   
-  \clearpage 
-
-  \vspace*{\fill}
-
   \section*{\hspace{-\margindedent}Acknowledgements}
   Thank you to Aurora \& Legacy project team leads Patrick Underwood and Brodie Alexander for providing the opportunity and environment to work on these rockets as part of the team, as well as to Dr. Glenn Matthews for his enourmous help in getting this project up off the ground and his pivotal involvement with the avionics team in our initial year. 
 
@@ -497,8 +496,6 @@
     \item Jeremy Timotius -- \textit{data analysis}
     \item Lucas Webb -- \textit{ground control station}
   \end{itemize}
-
-  \vspace*{\fill}
 
   \clearpage
 

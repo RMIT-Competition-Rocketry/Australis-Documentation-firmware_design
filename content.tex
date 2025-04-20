@@ -13,7 +13,7 @@
     \item[Driver] Software implementation of a device or peripheral interface.
     \item[Peripheral] A hardware element internal to the controller that provides important extensions to the feature set of its core processor.
     \item[Submodule] An isolated source group packaged within \verb|extra|, that extends system functionality to target code. Submodules may only depend on the \verb|core| API.
-    \item[Subtarget] A single connected hardware unit as part of a target, consisting of one or more unique programmable controllers.
+    \item[Subtarget] A single connected hardware unit as part of a target, consisting of one or more unique chain-programmable controllers.
     \item[Target] A hardware platform on which the Australis Firmware operates.
 \end{description}
 
@@ -31,13 +31,14 @@
 
 \clearpage
 
-\paragraph{A Note on Endianness}\mbox{} \\
-All data in this document is presented in Big-endian notation, unless otherwise specified. 
-
-In reference to byte order, this means that the lower address of a datum represents the least significant byte of the complete value.
-
 
 \section{System Overview}
+
+\begin{tcolorbox}[colback=red!5, breakable, enhanced]
+\paragraph{\color{red}A Note on Endianness}\mbox{} \\[0.5em]
+All data in this document is presented in Big-endian notation, unless otherwise specified.\\[0.5em]
+In reference to byte order, this means that the lower address of a datum represents the least significant byte of the complete value.
+\end{tcolorbox}
 
 \subsection{Firmware Architecture}
 Australis Firmware is a software platform for implementing FreeRTOS task systems designed for high power rockets based on STM32 hardware. It is packaged as two internal components, \verb|core| and \verb|extra|, which can be integrated by developers to create a complete flight computer system for their required target.
@@ -92,11 +93,13 @@ Australis Firmware implements a layered architecture (pictured Fig.~\ref{fig:arc
 \subsubsection{Extra}
 
 \subsection{Data Storage and Interpretation}
-Data is stored in hardware-provided external flash as a series of dataframes which indicate the type of data and its contents. At present, there are two key dataframes that are defined: 
+Data is stored in hardware-provided external flash as a series of dataframes which indicate the type of data and its contents. At present, there are three key dataframes that are defined: 
 
+\vspace{-0.5em}
 \begin{itemize}
     \item \textbf{High resolution data} contains the raw data collected from the high resolution sensors (accelerometers, gyroscope)
     \item \textbf{Low resolution data} contains the raw data collected from the low resolution sensors (barometer)
+    \item \textbf{Event timestamps} contain an event identifier (e.g. apogee reached) and a time-of-flight millisecond counter to provide timing information for post-flight analysis
 \end{itemize}
 
 These dataframes are organised by header and payload, as described in Figure~\ref{fig:dataframe-structure}, where frame headers define the boundaries of each payload.
@@ -104,12 +107,12 @@ These dataframes are organised by header and payload, as described in Figure~\re
 \begin{figure}[h!]
   \begin{center}\hspace{4.5em}
   \begin{bytefield}[bitwidth=2em, endianness=big]{8}
-    \bitheader{0,5,6,7}\\
+    \bitheader{0,7}\\
     \begin{rightwordgroup}{Header}
       \wordbox{1}[bgcolor=aquamarine]{ID}\\
       \wordbox{1}[bgcolor=lavender]{Payload Length} \\
-      \wordbox{1}[bgcolor=lavender]{Payload CRC[15:8]} \\
-      \wordbox{1}[bgcolor=lavender]{Payload CRC[7:0]} 
+      \wordbox{1}[bgcolor=lavender]{Payload CRC$_{[15:8]}$} \\
+      \wordbox{1}[bgcolor=lavender]{Payload CRC$_{[7:0]}$} 
     \end{rightwordgroup}\\
     \begin{rightwordgroup}{Payload}
       \wordbox{1}{$D_0$}\\
@@ -117,7 +120,7 @@ These dataframes are organised by header and payload, as described in Figure~\re
       \wordbox[lrt]{1}{}\\
       \cskippedwords{blue!20}\\
       \wordbox[lrb]{1}{}\\
-      \wordbox{1}{$D_n$[7:0]}
+      \wordbox{1}{$D_n$}
     \end{rightwordgroup}
   \end{bytefield}
   \end{center}
