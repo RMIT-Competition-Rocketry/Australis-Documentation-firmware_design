@@ -1,0 +1,18 @@
+\ProvidesFile{lstalgorithm.sty}
+%%
+\lstdefinelanguage{Pseudocode}{
+  morekeywords=[1]{foreach, in, do, if, then, else, is},
+  morekeywords=[2]{input, output, return, continue},
+  literate={
+    {->}{$\rightarrow$}{2}
+    {<-}{$\leftarrow$}{2} 
+  },
+  alsoletter={.,0,1,2,3,4,5,6,7,8,9},
+  alsodigit={?},
+  sensitive=false,
+  morestring=[b]",
+  morecomment=[s]{/*}{*/},
+  morecomment=[l]@,
+  morecomment=[l]//,
+}[keywords,comments,strings]
+\endinput

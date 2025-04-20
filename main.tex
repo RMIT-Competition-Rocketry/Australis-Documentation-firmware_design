@@ -17,6 +17,7 @@
 \newfontfamily{\arial}{Arial}
 \newfontfamily{\fauna}{FAUNA}[Path = fonts/, Extension = .ttf, UprightFont = *-THIN]
 
+
 \usepackage{lastpage}
 \usepackage{pgfplots}
 \usepackage{geometry}
@@ -27,7 +28,6 @@
 \usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{wrapfig}
-\usepackage{listings}
 \usepackage{amsmath}
 \usepackage{bytefield}
 \usepackage{pdfpages}
@@ -41,8 +41,10 @@
 \usepackage{siunitx}
 \usepackage{hyperref}
 \usepackage{graphicx}
+\usepackage{listings}
 \usepackage[table]{xcolor}
-\usepackage{tcolorbox}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{listings}
 \usepackage{bm}
 \usepackage{svg}
 \usepackage{lipsum}
@@ -83,6 +85,29 @@
 % Define \setorglabel to store the organisation label
 \newcommand{\setorglabel}[1]{\def\orglabel{#1}}
 \newcommand{\orglabel}{}
+
+% Define command for displaying skipped words in a bytefield
+\makeatletter
+\DeclareRobustCommand{\cskippedwords}[2][2ex]{%
+  \setlength{\units@wide}{\bf@bitwidth * \bits@wide}%
+  \setlength{\units@high}{1pt * \ratio{\units@wide}{6.0pt}}%
+  \setlength{\units@tall}{#1 + \units@high}%
+  \edef\num@wide{\strip@pt\units@wide}%
+  \edef\num@tall{\strip@pt\units@tall}%
+  \edef\num@high{\strip@pt\units@high}%
+  \begin{picture}(\num@wide,\num@tall)%
+  \begin{tikzpicture}[overlay]
+  \draw[fill=#2,fill opacity=0.2] 
+    (0,-\bf@bitheight) -- (0,0) -- (0,\units@high) -- (\units@wide,0) -- +(0,-\bf@bitheight) -- cycle;
+  \draw[fill=#2,fill opacity=0.2]
+    (0,\units@high+#1+\bf@bitheight) -- ++(\units@wide,0) -- ++(0,-\bf@bitheight-\units@high) -- (0,\units@high+#1) -- cycle;
+  \end{tikzpicture}%
+  \end{picture}%
+  \ifcounting@words
+    \inc@bytefield@height{\unitlength * \real{\num@tall}}%
+    \global\counting@wordsfalse
+  \fi}
+\makeatother
 
 % ======================================================================================
 %                                    HEADER/FOOTER
@@ -160,15 +185,70 @@
 %                                      LISTINGS
 % ======================================================================================
 
-\lstset{language=C++,
-        basicstyle=\ttfamily,
-        keywordstyle=\color{blue}\ttfamily,
-        stringstyle=\color{red}\ttfamily,
-        commentstyle=\color{lightgreen}\ttfamily,
-        morecomment=[l][\color{magenta}]{\#},
-        numbers = left,
-        breaklines = true
+%\lstset{language=C++,
+%        basicstyle=\ttfamily,
+%        keywordstyle=\color{blue}\ttfamily,
+%        stringstyle=\color{red}\ttfamily,
+%        commentstyle=\color{lightgreen}\ttfamily,
+%        morecomment=[l][\color{magenta}]{\#},
+%        numbers = left,
+%        breaklines = true
+%}
+
+\usepackage{lstalgorithm}
+
+\newlength\inwd
+\setlength\inwd{0em}
+
+\AtBeginDocument{
+   \newtcblisting[auto counter]{algorithm}[2][lst:\thelstlisting]{
+    after skip balanced=1.5em,
+    before skip=1.5em,
+    label=#1,
+    title=\textbf{Algorithm \thetcbcounter\ :} #2,
+    coltitle=black,
+    detach title,
+    comment and listing,,
+    comment=\tcbtitle,
+    enlarge left by=\inwd,
+    width=\linewidth-\inwd,
+    enhanced,
+    boxrule=0.4pt,
+    colback=gray!10,
+    bottom=0pt,
+    overlay={
+        \node[rectangle, fill=gray,
+          inner sep=0pt,
+          minimum width=1.5mm,
+          minimum height = \tcbtextheight,
+          rounded corners = 0.75mm,
+          anchor=north east,
+          xshift=-2em,
+          yshift=-2mm
+        ] 
+        at (frame.north west) {};
+    },
+    listing options={
+        escapeinside={(!}{!)},
+        numbers=none,
+        breaklines=true,
+        breakautoindent=false,
+        breakindent=0ex,
+        mathescape=true,
+        xleftmargin=0.8em,
+        basicstyle=\cascadia,
+        language=Pseudocode,
+        keywordstyle={[1]{\color{blue}\cascadia}},
+        keywordstyle={[2]{\bfseries\color{red}\cascadia}},
+        stringstyle=\color{red}\cascadia,
+        commentstyle=\color{lightgreen}\cascadia,
+        showstringspaces=false,
+    },
+  }
 }
+
+\newlength{\LHSwidth}
+\newcommand{\LHS}[1]{\makebox[\LHSwidth][l]{#1}}
 
 % Suppress numbering
 \let\origthelstnumber\thelstnumber
@@ -348,9 +428,10 @@
   \begin{table}[h]
   \centering
   \begin{tabularx}{0.5\textwidth}{@{}X@{}}
-    Version      \dotfill #1     \\
-    Last Updated \dotfill \today \\
-    Date Created \dotfill #2     
+    Version         \dotfill #1            \\
+    Last Updated    \dotfill \today        \\
+    Date Created    \dotfill #2            \\
+    Original Author \dotfill Matthew Ricci 
   \end{tabularx}
   \end{table}
   \endgroup}
@@ -373,8 +454,12 @@
   \vspace*{-1in}
   \noindent\makebox[\textwidth]{\includegraphics[width=\paperwidth]{./img/banner.png}}
 
-  \section*{\hspace{-\margindedent}Introduction}
-  This document servers to provide a comprehensive overview of the Australis Firmware system architecture and its implementation.
+  \vspace*{0.5in}
+
+  \section*{\hspace{-\margindedent}Document Information}
+  This document serves to provide a comprehensive overview of the Australis Firmware system architecture and its implementation. Descriptions are provided of the firmware architecture and its components, implementations of internal systems, and justifications for the design. 
+
+  Additional information is included on the future of the system and where developments may lead.
   
   \section*{\hspace{-\margindedent}Related Documents}
   Available from \url{https://github.com/RMIT-Competition-Rocketry/}:
@@ -383,11 +468,17 @@
     \item AV2 Hardware Reference
   \end{itemize}
   
+  \clearpage 
+
+  \vspace*{\fill}
+
   \section*{\hspace{-\margindedent}Acknowledgements}
-  Thank you to Aurora \& Legacy project team leads Patrick Underwood and Brodie Alexander for providing the opportunity and environment to work on these rockets as part of the team, and thank you to everyone who helped make them a reality!
+  Thank you to Aurora \& Legacy project team leads Patrick Underwood and Brodie Alexander for providing the opportunity and environment to work on these rockets as part of the team, as well as to Dr. Glenn Matthews for his enourmous help in getting this project up off the ground and his pivotal involvement with the avionics team in our initial year. 
+
+  And thank you to everyone on the Aurora team who helped make it all a reality!
 
   \subsection*{\hspace{-\margindedent}Key Contributors}
-  Thank you to these contributors, without whom the Australis Firmware would not exist.
+  Thank you to these contributors, without whom the Australis Firmware would not exist:
   \vspace{-0.5em}
   \begin{itemize}
     \setlength{\itemindent}{2em}
@@ -397,7 +488,6 @@
   \end{itemize}
 
   \subsection*{\hspace{-\margindedent}Special Thanks}
-  
   Other members of the Aurora V Avionics team:
   \vspace{-0.5em}
   \begin{itemize}[]
@@ -407,6 +497,8 @@
     \item Jeremy Timotius -- \textit{data analysis}
     \item Lucas Webb -- \textit{ground control station}
   \end{itemize}
+
+  \vspace*{\fill}
 
   \clearpage
 
@@ -419,7 +511,7 @@
   
   % TITLE
   \titleAM{\sysname}{\docname}
-  \documentInfo{1.0}{\DTMdate{2025-03-11}}
+  \documentInfo{1.0}{\DTMdate{2025-03-16}}
 
   \vspace*{\fill}
   
@@ -446,16 +538,7 @@
   \clearpage
   
   % CHANGELOG
-  \section{Document History}
-  \begin{table}[h]
-  \centering
-  \centerline{\begin{tabularx}{\headwidth}{lll}
-  Date & Changes Made & Made By \\
-  \midrule
-  \DTMdisplaydate{2025}{03}{16}{-1} & Create initial document & Matthew Ricci\\
-  \midrule
-  \end{tabularx}}
-  \end{table}  
+  \input{changelog}
 
   % APPENDIX
   \clearpage

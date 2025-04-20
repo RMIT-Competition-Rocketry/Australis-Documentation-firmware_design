@@ -4,29 +4,38 @@
 \section*{Important Terms}
 \addcontentsline{toc}{section}{Important Terms}
 \begin{description}[leftmargin=8em,style=multiline]
-    \item[Australis] Student developed flight computer hardware platform for high power rockets.
-    \item[Australis Core] An internal component providing the base API and critical logic; stylised \verb|core|.
-    \item[Australis Extra] An internal component providing modular systems that may be optionally included to extend core functionality; stylised \verb|extra|.
+    \item[Australis] SRAD flight computer platform for high power rockets.
+    \item[Australis Core] An internal component providing the base API and critical logic; stylised as \verb|core|.
+    \item[Australis Extra] An internal component providing modular systems that may be optionally included to extend core functionality; stylised as \verb|extra|.
     \item[Australis Firmware] Flight computer firmware system for high power rockets; designed for, but not limited to, deployment on Australis targets.
     \item[Component] A collection of semantically related code groups and files within the Australis Firmware ecosystem.
     \item[Device] A hardware element external to the controller that provides additional functionality via a connected interface.
     \item[Driver] Software implementation of a device or peripheral interface.
     \item[Peripheral] A hardware element internal to the controller that provides important extensions to the feature set of its core processor.
-    \item[Submodule] An isolated system packaged within \verb|extra| that extends system functionality to target source code. Submodules may only depend on the \verb|core| API.
+    \item[Submodule] An isolated source group packaged within \verb|extra|, that extends system functionality to target code. Submodules may only depend on the \verb|core| API.
+    \item[Subtarget] A single connected hardware unit as part of a target, consisting of one or more unique programmable controllers.
     \item[Target] A hardware platform on which the Australis Firmware operates.
 \end{description}
 
 \phantomsection
 \section*{Abbreviations}
 \addcontentsline{toc}{section}{Abbreviations}
-\begin{description}[leftmargin=3em,style=multiline]
+\begin{description}[leftmargin=4em,style=multiline]
     \item[A3\footnotemark] Aurora 3
     \item[API] Application Programming Interface
     \item[AV2] Australis Version 2
+    \item[COTS] Commercial Off The Shelf
+    \item[SRAD] Student Researched And Developed
 \end{description}
 \footnotetext{{Also refers to version 1 of the Australis flight computer hardware.}}
 
 \clearpage
+
+\paragraph{A Note on Endianness}\mbox{} \\
+All data in this document is presented in Big-endian notation, unless otherwise specified. 
+
+In reference to byte order, this means that the lower address of a datum represents the least significant byte of the complete value.
+
 
 \section{System Overview}
 
@@ -82,6 +91,75 @@ Australis Firmware implements a layered architecture (pictured Fig.~\ref{fig:arc
 
 \subsubsection{Extra}
 
+\subsection{Data Storage and Interpretation}
+Data is stored in hardware-provided external flash as a series of dataframes which indicate the type of data and its contents. At present, there are two key dataframes that are defined: 
+
+\begin{itemize}
+    \item \textbf{High resolution data} contains the raw data collected from the high resolution sensors (accelerometers, gyroscope)
+    \item \textbf{Low resolution data} contains the raw data collected from the low resolution sensors (barometer)
+\end{itemize}
+
+These dataframes are organised by header and payload, as described in Figure~\ref{fig:dataframe-structure}, where frame headers define the boundaries of each payload.
+
+\begin{figure}[h!]
+  \begin{center}\hspace{4.5em}
+  \begin{bytefield}[bitwidth=2em, endianness=big]{8}
+    \bitheader{0,5,6,7}\\
+    \begin{rightwordgroup}{Header}
+      \wordbox{1}[bgcolor=aquamarine]{ID}\\
+      \wordbox{1}[bgcolor=lavender]{Payload Length} \\
+      \wordbox{1}[bgcolor=lavender]{Payload CRC[15:8]} \\
+      \wordbox{1}[bgcolor=lavender]{Payload CRC[7:0]} 
+    \end{rightwordgroup}\\
+    \begin{rightwordgroup}{Payload}
+      \wordbox{1}{$D_0$}\\
+      \wordbox{1}{$D_1$}\\
+      \wordbox[lrt]{1}{}\\
+      \cskippedwords{blue!20}\\
+      \wordbox[lrb]{1}{}\\
+      \wordbox{1}{$D_n$[7:0]}
+    \end{rightwordgroup}
+  \end{bytefield}
+  \end{center}
+  \caption{Dataframe structure for avionics}
+  \label{fig:dataframe-structure}
+\end{figure}
+
+A dataframe header consists of four bytes. The first byte defines the frame identifier, indicating the type of dataframe. The second byte defines the payload length, which describes how many bytes are contained within the payload of the dataframe.
+
+The last two bytes in the header contain a CRC encoding of the payload data. This allows for post-processing analysis to better identify and reject invalid or corrupt data.
+
+\subsubsection{Interpreting Binary Data}
+
+Algorithm~\ref{alg:dataframe-validation} provides a simple, pseudocode defined implementation for dataframe validation when performing post-flight data analysis.
+
+This approach simply iterates through every byte of data retrieved from the binary, extracts the bytes that \textit{would} contain the payload length and CRC in a valid dataframe, and compares the expected CRC to the calculated CRC of the assumed payload.
+
+\settowidth{\LHSwidth}{\mbox{\ttfamily$\text{length}_{[0]}$}}
+
+\begin{algorithm}[alg:dataframe-validation]{Simple dataframe validation}
+(!\textit{Assume \emph{\bfseries crc16} is a function that accepts some arbitrary binary series and its length, and returns its 16-bit CRC encoding.}!)
+
+input:  (!An array of 8-bit binary values, \emph{data}!) 
+output: (!A valid data payload!)
+
+foreach byte in (!\emph{data}!) do:
+    (!\LHS{$\text{id}_{[0]}$}!) <- $\ast$(byte)
+    (!\LHS{$\text{length}_{[0]}$}!) <- $\ast$(byte + 1)
+    (!\LHS{$\text{crc}_{[1:0]}$}!) <- $\ast$(byte + 2)
+
+    payload <- (byte + 4)
+
+    if crc is (!\emph{\bfseries crc16(payload, length)}!) then:
+        return payload
+
+    else: continue
+\end{algorithm}
+
+Full implementation details are beyond the scope of this document and may not entirely pertain to the definition of Algorithm~\ref{alg:dataframe-validation}. 
+
+More efficient methods of analysis are possible, this simply serves as a high level informational breakdown of the process of interpreting the binary data.
+
 \section{Implementation Details}
 
 \section{Future Progress}
@@ -123,3 +201,4 @@ Australis Firmware implements a layered architecture (pictured Fig.~\ref{fig:arc
     \caption{Proposed system architecture}
     \label{fig:architecture_portable}
 \end{figure}
+
