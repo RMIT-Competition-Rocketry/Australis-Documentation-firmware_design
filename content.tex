@@ -167,6 +167,13 @@ More efficient methods of analysis are possible, this simply serves as a high le
 
 \section{Future Progress}
 
+\subsection{Device-generic Portable Layer}
+Though designed for completeness in portability, it is currently only possible to deploy Australis Firmware based implementations to hardware targetting STM32F439 microcontrollers. This is due to limitations in the low level API, as interface drivers must be developed to be entirely platform specific. 
+
+As a workaround to this, there is potential for extension to other device families by defining a common API for interface drivers -- similar to the device driver system -- and extracting the hardware specific code to a portable layer that sits below all other components in the firmware (as visualised in Figure~\ref{fig:architecture_portable}). 
+
+This approach is similar in design to the applied architecture of FreeRTOS.
+
 \begin{figure}[ht]
     \centering
     \begin{tikzpicture}
